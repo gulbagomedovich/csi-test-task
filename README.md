@@ -1,2 +1,2 @@
 # csi-test-task
-Тестовое задание от crystals.ru
+Тестовое задание от [CSI](https://crystals.ru/)
