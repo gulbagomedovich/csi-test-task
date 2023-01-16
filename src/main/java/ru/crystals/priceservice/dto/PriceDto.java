@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PriceDto {
+    /*
+     Договоримся, что имеющиеся цены будут иметь какой-нибудь идентификатор,
+     а у новых цен идентификатор будет null
+     */
     private Long id;
     @EqualsAndHashCode.Include
     private String productCode;

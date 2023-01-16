@@ -19,7 +19,7 @@ class PriceMergingServiceImplTest {
     void current_prices_is_null() {
         List<PriceDto> newPrices = Collections.singletonList(
                 new PriceDto(
-                        1L,
+                        null,
                         "122856",
                         1,
                         1,
@@ -37,7 +37,7 @@ class PriceMergingServiceImplTest {
     void current_prices_is_empty() {
         List<PriceDto> newPrices = Collections.singletonList(
                 new PriceDto(
-                        1L,
+                        null,
                         "122856",
                         1,
                         1,
@@ -153,7 +153,7 @@ class PriceMergingServiceImplTest {
 
         List<PriceDto> newPrices = Arrays.asList(
                 new PriceDto(
-                        4L,
+                        null,
                         "122856",
                         1,
                         1,
@@ -162,7 +162,7 @@ class PriceMergingServiceImplTest {
                         11000L
                 ),
                 new PriceDto(
-                        5L,
+                        null,
                         "122856",
                         2,
                         1,
@@ -171,7 +171,7 @@ class PriceMergingServiceImplTest {
                         92000L
                 ),
                 new PriceDto(
-                        6L,
+                        null,
                         "6654",
                         1,
                         2,
@@ -214,7 +214,7 @@ class PriceMergingServiceImplTest {
         );
         assertEquals(99000L, mergedPrices.get(1).getValue());
 
-        assertEquals(5L, mergedPrices.get(2).getId());
+        assertNull(mergedPrices.get(2).getId());
         assertEquals("122856", mergedPrices.get(2).getProductCode());
         assertEquals(2, mergedPrices.get(2).getNumber());
         assertEquals(1, mergedPrices.get(2).getDepart());
@@ -242,7 +242,7 @@ class PriceMergingServiceImplTest {
         );
         assertEquals(5000L, mergedPrices.get(3).getValue());
 
-        assertEquals(6L, mergedPrices.get(4).getId());
+        assertNull(mergedPrices.get(4).getId());
         assertEquals("6654", mergedPrices.get(4).getProductCode());
         assertEquals(1, mergedPrices.get(4).getNumber());
         assertEquals(2, mergedPrices.get(4).getDepart());
@@ -269,5 +269,106 @@ class PriceMergingServiceImplTest {
                 mergedPrices.get(5).getEnd()
         );
         assertEquals(5000L, mergedPrices.get(5).getValue());
+    }
+
+    @Test
+    void merging_the_same_prices_with_different_expiration_dates() {
+        List<PriceDto> currentPrices = Arrays.asList(
+                new PriceDto(
+                        1L,
+                        "122856",
+                        1,
+                        1,
+                        LocalDateTime.of(2013, 1, 1, 0, 0, 0),
+                        LocalDateTime.of(2013, 1, 10, 0, 0, 0),
+                        8000L
+                ),
+                new PriceDto(
+                        2L,
+                        "122856",
+                        1,
+                        1,
+                        LocalDateTime.of(2013, 1, 10, 0, 0, 0),
+                        LocalDateTime.of(2013, 1, 20, 0, 0, 0),
+                        8700L
+                ),
+                new PriceDto(
+                        3L,
+                        "122856",
+                        1,
+                        1,
+                        LocalDateTime.of(2013, 1, 20, 0, 0, 0),
+                        LocalDateTime.of(2013, 1, 31, 23, 59, 59),
+                        9000L
+                )
+        );
+
+        List<PriceDto> newPrices = Arrays.asList(
+                new PriceDto(
+                        null,
+                        "122856",
+                        1,
+                        1,
+                        LocalDateTime.of(2013, 1, 5, 0, 0, 0),
+                        LocalDateTime.of(2013, 1, 15, 0, 0, 0),
+                        8000L
+                ),
+                new PriceDto(
+                        null,
+                        "122856",
+                        1,
+                        1,
+                        LocalDateTime.of(2013, 1, 15, 0, 0, 0),
+                        LocalDateTime.of(2013, 1, 25, 0, 0, 0),
+                        8500L
+                )
+        );
+
+        List<PriceDto> mergedPrices = priceMergingService.mergePrices(currentPrices, newPrices);
+
+        assertNotNull(mergedPrices);
+        assertEquals(3, mergedPrices.size());
+
+        assertEquals(1L, mergedPrices.get(0).getId());
+        assertEquals("122856", mergedPrices.get(0).getProductCode());
+        assertEquals(1, mergedPrices.get(0).getNumber());
+        assertEquals(1, mergedPrices.get(0).getDepart());
+        assertEquals(
+                LocalDateTime.of(2013, 1, 1, 0, 0, 0),
+                mergedPrices.get(0).getBegin()
+        );
+        assertEquals(
+                LocalDateTime.of(2013, 1, 15, 0, 0, 0),
+                mergedPrices.get(0).getEnd()
+        );
+        assertEquals(8000L, mergedPrices.get(0).getValue());
+
+        assertNull(mergedPrices.get(1).getId());
+        assertEquals("122856", mergedPrices.get(1).getProductCode());
+        assertEquals(1, mergedPrices.get(1).getNumber());
+        assertEquals(1, mergedPrices.get(1).getDepart());
+        assertEquals(
+                LocalDateTime.of(2013, 1, 15, 0, 0, 0),
+                mergedPrices.get(1).getBegin()
+        );
+        assertEquals(
+                LocalDateTime.of(2013, 1, 25, 0, 0, 0),
+                mergedPrices.get(1).getEnd()
+        );
+        assertEquals(8500L, mergedPrices.get(1).getValue());
+
+        assertEquals(3L, mergedPrices.get(2).getId());
+        assertEquals("122856", mergedPrices.get(2).getProductCode());
+        assertEquals(1, mergedPrices.get(1).getNumber());
+        assertEquals(1, mergedPrices.get(1).getDepart());
+        assertEquals(
+                LocalDateTime.of(2013, 1, 25, 0, 0, 0),
+                mergedPrices.get(2).getBegin()
+        );
+        assertEquals(
+                LocalDateTime.of(2013, 1, 31, 23, 59, 59),
+                mergedPrices.get(2).getEnd()
+        );
+        assertEquals(9000L, mergedPrices.get(2).getValue());
     }
 }
